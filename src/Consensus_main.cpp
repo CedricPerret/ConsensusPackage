@@ -19,22 +19,24 @@ void update_function(const float speaker, float &listener,
                      const std::string type_update, const float max_update, const float inc_update,
                      std::string type_opinions, std::default_random_engine generator){
     float update;
-    if (type_update == "sigmoid"){
-        update = max_update / (1+exp(-inc_update * (persuasiveness_speaker - stubborness_listener))) ;
-    } else if (type_update == "step"){
-        if (persuasiveness_speaker >= stubborness_listener){
-            update = max_update;
-        } else{
-            update = 0;
+    if (listener != speaker){
+      if (type_update == "sigmoid"){
+          update = max_update / (1+exp(-inc_update * (persuasiveness_speaker - stubborness_listener))) ;
+      } else if (type_update == "step"){
+          if (persuasiveness_speaker >= stubborness_listener){
+              update = max_update;
+          } else{
+              update = 0;
+          }
+      }
+      //std::cout << listener << std::endl;
+      if (type_opinions == "continuous"){
+        listener = listener + update * (speaker - listener);
+      }else if (type_opinions == "discrete"){
+        std::uniform_real_distribution<> dist(0, 1);
+        if (dist(generator) < update){
+          listener = speaker;
         }
-    }
-    //std::cout << listener << std::endl;
-    if (type_opinions == "continuous"){
-      listener = listener + update * (speaker - listener);
-    }else if (type_opinions == "discrete"){
-      std::uniform_real_distribution<> dist(0, 1);
-      if (dist(generator) < update){
-        listener = speaker;
       }
     }
 
@@ -71,26 +73,32 @@ std::vector<std::vector<float>> consensus_model( std::string level_of_detail,
                                const int n_listeners, 
                                const float breaking_point, const std::string type_stop, 
                                std::string type_update,
-                               int n_individuals, std::string type_opinions = "continuous", const float lower_bound = 0, const float higher_bound = 1,
+                               std::string type_opinions = "continuous", const float lower_bound = 0, const float higher_bound = 1,
                                const float max_update = 1, const float inc_update = 1, float seed = 0, int max_time = 100000){
     
-    
+    //Initialise Output
+    std::vector<std::vector<float>> res;
+  
     if(seed == 0){
       seed = time(NULL);
     }
     
+    if(talkativeness.size() != persuasiveness.size() || talkativeness.size() != stubborness.size()){
+      std::cout << "Characteristics vectors of different size" << std::endl;
+      return(res);
+    }
+    int n_individuals = talkativeness.size();
+      
+      
     std::default_random_engine generator(seed);
     std::vector<float> opinions = initialize_opinions(n_individuals,type_opinions,lower_bound,higher_bound, generator);
 
     
-
     float mean_x;
     float std_x;
     bool breaking_cond = false;
     int time_step = 0;
     
-    //Initialise Output
-    std::vector<std::vector<float>> res;
 
     
     //Proba of being a speaker (need to divide by max and add k)
@@ -181,7 +189,7 @@ std::vector<std::vector<float>> replicate_consensus_model(const int n_simul, std
                                                       const int n_listeners, 
                                                       const float breaking_point, const std::string type_stop, 
                                                       std::string type_update,
-                                                      int n_individuals, std::string type_opinions = "continuous", const float lower_bound = 0, const float higher_bound = 1,
+                                                      std::string type_opinions = "continuous", const float lower_bound = 0, const float higher_bound = 1,
                                                       const float max_update = 1, const float inc_update = 1, int max_time = 100000){
 
 //Initialise output and seed
@@ -194,7 +202,7 @@ std::vector<std::vector<float>> replicate_consensus_model(const int n_simul, std
                               talkativeness, persuasiveness, stubborness,
                               n_listeners,
                               breaking_point, type_stop,
-                              type_update, n_individuals, type_opinions, lower_bound, higher_bound,
+                              type_update, type_opinions, lower_bound, higher_bound,
                               max_update, inc_update, seed, max_time)[0]);
   }
   return(res);
