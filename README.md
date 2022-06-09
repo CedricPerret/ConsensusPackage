@@ -1,6 +1,7 @@
 # ConsensusPackage
 
 Package to simulate consensus decision-making using opinion formation.
+For description of the model, see https://pubmed.ncbi.nlm.nih.gov/35341781/ . Note that the update function is different.
 
 Implemented so far:
 * Model which takes distribution of characteristics (talkativeness, persuasiveness, stubborness)
