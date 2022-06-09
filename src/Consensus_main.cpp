@@ -72,7 +72,7 @@ std::vector<std::vector<float>> consensus_model( std::string level_of_detail,
                                const float breaking_point, const std::string type_stop, 
                                std::string type_update,
                                int n_individuals, std::string type_opinions = "continuous", const float lower_bound = 0, const float higher_bound = 1,
-                               const float max_update = 1, const float inc_update = 1, float seed = 0){
+                               const float max_update = 1, const float inc_update = 1, float seed = 0, int max_time = 100000){
     
     
     if(seed == 0){
@@ -113,7 +113,7 @@ std::vector<std::vector<float>> consensus_model( std::string level_of_detail,
         }
         std::shuffle(list_listeners.begin(),list_listeners.end(),generator);
 
-
+        
         //Calculate mean and variance
         mean_x = std::accumulate(opinions.begin(),opinions.end(),0.0) / opinions.size();
         std_x = 0;
@@ -138,6 +138,9 @@ std::vector<std::vector<float>> consensus_model( std::string level_of_detail,
             if (std_x <= breaking_point){
                 breaking_cond = true;
             }
+        }
+        if (time_step >= max_time){
+          breaking_cond = true;
         }
 
         for(int i = 0; i<n_listeners; ++i){
@@ -179,7 +182,7 @@ std::vector<std::vector<float>> replicate_consensus_model(const int n_simul, std
                                                       const float breaking_point, const std::string type_stop, 
                                                       std::string type_update,
                                                       int n_individuals, std::string type_opinions = "continuous", const float lower_bound = 0, const float higher_bound = 1,
-                                                      const float max_update = 1, const float inc_update = 1){
+                                                      const float max_update = 1, const float inc_update = 1, int max_time = 100000){
 
 //Initialise output and seed
   std::vector<std::vector<float>> res;
@@ -192,7 +195,7 @@ std::vector<std::vector<float>> replicate_consensus_model(const int n_simul, std
                               n_listeners,
                               breaking_point, type_stop,
                               type_update, n_individuals, type_opinions, lower_bound, higher_bound,
-                              max_update, inc_update, seed)[0]);
+                              max_update, inc_update, seed, max_time)[0]);
   }
   return(res);
 }
